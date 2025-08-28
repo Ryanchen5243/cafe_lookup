@@ -18,6 +18,12 @@ async function init_script() {
     await google.maps.importLibrary("places");
     const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement();
     document.getElementById("autocomplete").appendChild(placeAutocomplete);
+    placeAutocomplete.addEventListener("gmp-select",async ({placePrediction})=>{
+        const place = placePrediction.toPlace();
+        await place.fetchFields({ fields: ['id','displayName', 'formattedAddress', 'location'] });
+        // send request w id to api gateway to invoke lambda
+        console.log(place.id);
+    })
 }
 
 init_script();
