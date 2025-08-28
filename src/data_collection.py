@@ -10,13 +10,15 @@ def g_maps_lambda():
     headers = {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': API_KEY,
-        'X-Goog-FieldMask': 'places.displayName'
+        'X-Goog-FieldMask': 'places.displayName,places.id'
     }
+    table_A_types = ["bakery","cafe","coffee_shop","dessert_shop","tea_house"]
     body = {
-        'includedTypes': [
-            'cafe',
-        ],
-        'maxResultCount': 10,
+        'includedTypes': table_A_types,
+        'excludedTypes':[],
+        'includedPrimaryTypes':[],
+        'excludedPrimaryTypes': [],
+        'maxResultCount': 20,
         'locationRestriction': {
             'circle': {
                 'center': {
@@ -31,7 +33,7 @@ def g_maps_lambda():
     if response.status_code == 200:
         print("POST Request Successful")
         res_dict = response.json()
-        print(json.dumps(res_dict))
+        print(json.dumps(res_dict,indent=3))
     else:
         print("Error:", response.status_code)
 if __name__ == "__main__":
