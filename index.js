@@ -18,17 +18,28 @@ async function init_script() {
     await google.maps.importLibrary("places");
     const placeAutocomplete = new google.maps.places.PlaceAutocompleteElement();
     document.getElementById("autocomplete").appendChild(placeAutocomplete);
+    
+    let selectedPlace = null;
     placeAutocomplete.addEventListener("gmp-select",async ({placePrediction})=>{
         const place = placePrediction.toPlace();
         await place.fetchFields({ fields: ['id','displayName', 'formattedAddress', 'location'] });
-        // send request w id to api gateway to invoke lambda
-        const params = new URLSearchParams();
-        params.append("place_id",place.id);
-        const response = await fetch(`https://bpjhf33406.execute-api.us-east-2.amazonaws.com/getNearbyCafes?${params}`)
-        console.log("Response from Lambda: foobar");
-        const res_body = await response.json();
-        console.log(res_body);
+        selectedPlace = place.id;
+    })
 
+    document.getElementById('fetchBtn').addEventListener("click", async () => {
+        if (!selectedPlace) {
+            return;
+        }
+        const params = new URLSearchParams();
+        params.append("place_id",selectedPlace);
+        try {
+            const response = await fetch(`https://bpjhf33406.execute-api.us-east-2.amazonaws.com/getNearbyCafes?${params}`);
+            const res_body = await response.json();
+            console.log(res_body);
+        } catch (err){
+            console.log("error with fetch api",err);
+        }
+        
     })
 }
 
