@@ -13,7 +13,7 @@ def lambda_handler(event, context):
     with urlopen(place_detail_request) as response:
         res_obj = json.loads(response.read())
         req_lat,req_lon = res_obj['location']['latitude'],res_obj['location']['longitude']
-    result_list = []
+    raw_list = []
     candidates = ["coffee_shop","cafe"]
     for cand in candidates:
         body = {
@@ -37,7 +37,7 @@ def lambda_handler(event, context):
         search_nearby_request.add_header('Content-Type', 'application/json')
         search_nearby_request.add_header('X-Goog-Api-Key', os.environ['GMAPS_API_KEY_BACKEND'])
         # gen_info -> location, regularOpeningHours, currentOpeningHours, priceLevel, priceRange
-        search_nearby_request.add_header('X-Goog-FieldMask', 'places.id,places.displayName,places.primaryType,places.types,places.rating,places.reviews,places.reviewSummary,places.userRatingCount,places.dineIn')
+        search_nearby_request.add_header('X-Goog-FieldMask', 'places.id,places.displayName,places.primaryType,places.types,places.rating,places.reviews,places.reviewSummary,places.userRatingCount,places.dineIn,places.location,places.regularOpeningHours,places.currentOpeningHours,places.priceLevel,places.priceRange')
         with urlopen(search_nearby_request) as response:
             res_obj = json.loads(response.read())
             for place in res_obj['places']:
@@ -45,7 +45,7 @@ def lambda_handler(event, context):
                     continue
                 if 'reviews' not in place:
                     continue
-                result_list.append({
+                raw_list.append({
                     "place_id": place['id'],
                     "display_name": place['displayName']['text'],
                     "p_type": place['primaryType'],
@@ -54,18 +54,31 @@ def lambda_handler(event, context):
                     "rating_count": None if 'userRatingCount' not in place else place['userRatingCount'],
                     "has_dine_in": None if 'dineIn' not in place else place['dineIn'],
                     "review_summary": None if 'reviewSummary' not in place else place['reviewSummary'],
-                    "reviews_list": None if 'reviews' not in place else place['reviews']
+                    "reviews_list": [] if 'reviews' not in place else [(None,None) if 'text' not in r.keys() else (r['rating'],r['text']['text']) for r in place['reviews']],
+                    "location": [["lat",place['location']['latitude']],["long",place['location']['longitude']]],
+                    "today_hours": None if 'currentOpeningHours' not in place else place['currentOpeningHours'],
+                    "weekly_hours": None if 'regularOpeningHours' not in place else place['regularOpeningHours'],
+                    "price_level": None if 'priceLevel' not in place else place['priceLevel'],
+                    "price_range": None if 'priceRange' not in place else [int(place['priceRange']['startPrice']['units']),int(place['priceRange']['endPrice']['units'])]
                 })
     # display api results
-    print(f'Total of {len(result_list)} places returned from api')
-    for res in result_list:
+    # print(f'Total of {len(raw_list)} places returned from api')
+    '''
+    for res in raw_list:
         print(">>>>>")
         print(f"{res['place_id']} - {res['p_type']} - {res['display_name']}")
         print("all_types: ",res['all_types'])
         print("rating: ",res['rating'], "total_ratings: ",res['rating_count'])
-        print(res['reviews_list'])
+        print("location: ",res['location'])
+        # print("weekly hours: ",res['weekly_hours'])
+        # print("today hours: ",res['today_hours'])
+        print("price level: ",res['price_level'])
+        print("price range: ", res['price_range'])
+        print("reviews list: ", res['reviews_list'])
         print("------------------------------------------")
-    # nlp analysis
+    '''
+    res_list = compute_study_heuristic(raw_list)
+    print(res_list)
 
     print("end lambda testing........")
     return {
@@ -73,6 +86,9 @@ def lambda_handler(event, context):
         "headers": {"Access-Control-Allow-Origin":"http://127.0.0.1:8080"},
         "body": json.dumps({"msg": "foo bar says hi"})
     }
+
+def compute_study_heuristic(raw_data):
+    return raw_data
 
 if __name__ == "__main__":
     test_event = {
