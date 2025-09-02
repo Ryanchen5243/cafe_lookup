@@ -22,7 +22,13 @@ async function init_script() {
         const place = placePrediction.toPlace();
         await place.fetchFields({ fields: ['id','displayName', 'formattedAddress', 'location'] });
         // send request w id to api gateway to invoke lambda
-        console.log(place.id);
+        const params = new URLSearchParams();
+        params.append("place_id",place.id);
+        const response = await fetch(`https://bpjhf33406.execute-api.us-east-2.amazonaws.com/getNearbyCafes?${params}`)
+        console.log("Response from Lambda: foobar");
+        const res_body = await response.json();
+        console.log(res_body);
+
     })
 }
 
