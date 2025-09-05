@@ -1,6 +1,8 @@
 import json
+import re
 from urllib.request import urlopen,Request
 import os
+from ReviewClassifier import ReviewClassifier
 
 def lambda_handler(event, context):
     print("start testing lambda ...")
@@ -62,7 +64,7 @@ def lambda_handler(event, context):
                     "price_range": None if 'priceRange' not in place else [int(place['priceRange']['startPrice']['units']),int(place['priceRange']['endPrice']['units'])]
                 })
     # display api results
-    # print(f'Total of {len(raw_list)} places returned from api')
+    print(f'Total of {len(raw_list)} places returned from api')
     '''
     for res in raw_list:
         print(">>>>>")
@@ -77,9 +79,7 @@ def lambda_handler(event, context):
         print("reviews list: ", res['reviews_list'])
         print("------------------------------------------")
     '''
-    res_list = compute_study_heuristic(raw_list)
-    print(res_list)
-
+    res_list = filter_cafes(raw_list,clf=ReviewClassifier())
     print("end lambda testing........")
     return {
         "statusCode": 200,
@@ -87,7 +87,28 @@ def lambda_handler(event, context):
         "body": json.dumps({"msg": "foo bar says hi"})
     }
 
-def compute_study_heuristic(raw_data):
+def filter_cafes(raw_data,clf) -> list:
+    print("............start filtering cafes............")
+    for place in raw_data: # O() p -> #places, 5 -> # reviews, s
+        # place -> dict_keys(['place_id', 'display_name', 'p_type', 'all_types', 'rating', 'rating_count', 'has_dine_in', 'review_summary', 'reviews_list', 'location', 'today_hours', 'weekly_hours', 'price_level', 'price_range'])
+        for review in place['reviews_list']:
+            # type(review[1]) is str
+            sentence_list = re.split(r'[.!?]+', str(review[1]), maxsplit=0)
+            detect_0 = False
+            for s in sentence_list:
+                if not s:
+                    continue
+                s = re.sub(r'\n',' ',s).strip()
+                pred_class = clf.predict(s)
+                print("<<<",s," -> label = ",pred_class)
+                if pred_class == 0:
+                    detect_0 = True
+                    break
+            if detect_0:
+                break
+            print("--------------------------")
+        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    print("............end filtering cafes............")
     return raw_data
 
 if __name__ == "__main__":
