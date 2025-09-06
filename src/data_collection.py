@@ -89,23 +89,19 @@ def lambda_handler(event, context):
 
 def filter_cafes(raw_data,clf) -> list:
     print("............start filtering cafes............")
-    for place in raw_data: # O() p -> #places, 5 -> # reviews, s
+    for place in raw_data:
         # place -> dict_keys(['place_id', 'display_name', 'p_type', 'all_types', 'rating', 'rating_count', 'has_dine_in', 'review_summary', 'reviews_list', 'location', 'today_hours', 'weekly_hours', 'price_level', 'price_range'])
         for review in place['reviews_list']:
             # type(review[1]) is str
-            sentence_list = re.split(r'[.!?]+', str(review[1]), maxsplit=0)
-            detect_0 = False
-            for s in sentence_list:
-                if not s:
-                    continue
+            sentence_list = []
+            temp = re.split(r'[.!?]+', str(review[1]), maxsplit=0)
+            for s in temp:
                 s = re.sub(r'\n',' ',s).strip()
-                pred_class = clf.predict(s)
-                print("<<<",s," -> label = ",pred_class)
-                if pred_class == 0:
-                    detect_0 = True
-                    break
-            if detect_0:
-                break
+                if s:
+                    sentence_list.append(s)
+            print(sentence_list)
+            print(clf.predict(sentence_list))
+            
             print("--------------------------")
         print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     print("............end filtering cafes............")
