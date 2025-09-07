@@ -3,6 +3,7 @@ import re
 from urllib.request import urlopen,Request
 import os
 from ReviewClassifier import ReviewClassifier
+import numpy as np
 
 def lambda_handler(event, context):
     print("start testing lambda ...")
@@ -88,20 +89,25 @@ def lambda_handler(event, context):
     }
 
 def filter_cafes(raw_data,clf) -> list:
-    print("............start filtering cafes............")
     for place in raw_data:
-        # place -> dict_keys(['place_id', 'display_name', 'p_type', 'all_types', 'rating', 'rating_count', 'has_dine_in', 'review_summary', 'reviews_list', 'location', 'today_hours', 'weekly_hours', 'price_level', 'price_range'])
         for review in place['reviews_list']:
-            # type(review[1]) is str
             sentence_list = []
-            temp = re.split(r'[.!?]+', str(review[1]), maxsplit=0)
-            for s in temp:
+            for s in re.split(r'[.!?]+', str(review[1]), maxsplit=0):
                 s = re.sub(r'\n',' ',s).strip()
                 if s:
                     sentence_list.append(s)
-            print(sentence_list)
-            print(clf.predict(sentence_list))
-            
+            '''
+            heuristic scoring algorithm
+                let A0,A1,A2 <- study friendly, not study friendly, insufficient evidence
+                posterior <- [A0, A1, A2] with A_i representing ndarray of probabilities
+                    with A_i_j representing P(s_j=i) for s_j in input S = [s1,s2,....sk]
+                    where S are the sentences that make up the review
+            bayesian assumptions
+            '''
+            posterior = clf.predict(sentence_list)
+            A0_max,A1_max,A2_mean = np.max(posterior[:,0]), np.max(posterior[:,1]),np.mean(posterior[:,2])
+            print(posterior,A0_max,A1_max,A2_mean)
+            # normalized_s0
             print("--------------------------")
         print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
     print("............end filtering cafes............")
