@@ -1,0 +1,49 @@
+{
+    "version":"2.0",
+    "routeKey":"GET /getNearbyCafes",
+    "rawPath":"/getNearbyCafes",
+    "rawQueryString":"place_id=ChIJYeZuBI9YwokRjMDs_IEyCwo",
+    "headers":{
+        "accept":"*/*",
+        "accept-encoding":"gzip, deflate, br, zstd",
+        "accept-language":"en-US,en;q=0.9",
+        "content-length":"0",
+        "host":"bpjhf33406.execute-api.us-east-2.amazonaws.com",
+        "origin":"http://127.0.0.1:8080",
+        "priority":"u=1, i",
+        "referer":"http://127.0.0.1:8080/",
+        "sec-ch-ua":"\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"",
+        "sec-ch-ua-mobile":"?0",
+        "sec-ch-ua-platform":"\"Windows\"",
+        "sec-fetch-dest":"empty",
+        "sec-fetch-mode":"cors",
+        "sec-fetch-site":"cross-site",
+        "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
+        "x-amzn-trace-id":"Root=1-68b49f7c-66a850073c8ac7a45f1d6490",
+        "x-forwarded-for":"69.118.200.146",
+        "x-forwarded-port":"443",
+        "x-forwarded-proto":"https"
+    },
+    "queryStringParameters":{
+        "place_id":"ChIJYeZuBI9YwokRjMDs_IEyCwo"
+    },
+    "requestContext":{
+        "accountId":"640168446635",
+        "apiId":"bpjhf33406",
+        "domainName":"bpjhf33406.execute-api.us-east-2.amazonaws.com",
+        "domainPrefix":"bpjhf33406",
+        "http":{
+            "method":"GET",
+            "path":"/getNearbyCafes",
+            "protocol":"HTTP/1.1",
+            "sourceIp":"69.118.200.146",
+            "userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+        },
+        "requestId":"QL3bhjqIiYcEPSQ=",
+        "routeKey":"GET /getNearbyCafes",
+        "stage":"$default",
+        "time":"31/Aug/2025:19:16:12 +0000",
+        "timeEpoch":1756667772515
+    },
+    "isBase64Encoded":false
+}
