@@ -105,14 +105,14 @@ def lambda_handler(event, context):
                                   'price_range' : e['price_range'],
                                   'r_hours' : e['r_hours'],
                                   'study_confidence' : float(e['study_confidence'])},sorted_t_list[:k]))
-    
-    print(result)
-
     print("end lambda testing........")
     return {
         "statusCode": 200,
-        "headers": {"Access-Control-Allow-Origin":"http://127.0.0.1:8080"},
-        "body": json.dumps({"msg": "foo bar says hi"})
+        "headers": {
+            "Access-Control-Allow-Origin": "http://127.0.0.1:8080",
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps({"results": result})
     }
 
 def compute_scores(raw_data,clf) -> list:
