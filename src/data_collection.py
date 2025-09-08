@@ -13,6 +13,7 @@ def lambda_handler(event, context):
     place_detail_request.add_header('X-Goog-Api-Key', os.environ['GMAPS_API_KEY_BACKEND'])
     place_detail_request.add_header('X-Goog-FieldMask', 'id,displayName,location')
     req_lat,req_lon = None,None
+    print("making request to google places api....")
     with urlopen(place_detail_request) as response:
         res_obj = json.loads(response.read())
         req_lat,req_lon = res_obj['location']['latitude'],res_obj['location']['longitude']
@@ -39,8 +40,8 @@ def lambda_handler(event, context):
                             data=json.dumps(body).encode('utf-8'))
         search_nearby_request.add_header('Content-Type', 'application/json')
         search_nearby_request.add_header('X-Goog-Api-Key', os.environ['GMAPS_API_KEY_BACKEND'])
-        # gen_info -> location, regularOpeningHours, currentOpeningHours, priceLevel, priceRange
         search_nearby_request.add_header('X-Goog-FieldMask', 'places.id,places.displayName,places.primaryType,places.types,places.rating,places.reviews,places.reviewSummary,places.userRatingCount,places.dineIn,places.location,places.regularOpeningHours,places.currentOpeningHours,places.priceLevel,places.priceRange')
+        print("making request to nearby search....")
         with urlopen(search_nearby_request) as response:
             res_obj = json.loads(response.read())
             for place in res_obj['places']:
@@ -66,21 +67,47 @@ def lambda_handler(event, context):
                 })
     # display api results
     print(f'Total of {len(raw_list)} places returned from api')
-    '''
-    for res in raw_list:
-        print(">>>>>")
-        print(f"{res['place_id']} - {res['p_type']} - {res['display_name']}")
-        print("all_types: ",res['all_types'])
-        print("rating: ",res['rating'], "total_ratings: ",res['rating_count'])
-        print("location: ",res['location'])
-        # print("weekly hours: ",res['weekly_hours'])
-        # print("today hours: ",res['today_hours'])
-        print("price level: ",res['price_level'])
-        print("price range: ", res['price_range'])
-        print("reviews list: ", res['reviews_list'])
-        print("------------------------------------------")
-    '''
-    res_list = filter_cafes(raw_list,clf=ReviewClassifier())
+    print("preprocessing places hours....")
+    for p in raw_list:
+        r_hours = []
+        if p['weekly_hours']:
+            for entry in p['weekly_hours']['weekdayDescriptions']:
+                cleaned = re.sub('\u202f\u2009','',entry)
+                day,hours = cleaned.split(':',1)
+                open,close = None,None
+                if '24 hours' in hours.lower():
+                    open,close = "00:00","00:00"
+                elif 'closed' in hours.lower():
+                    pass
+                elif ':' in hours:
+                    matches = re.findall('\d{1,2}:\d{2}',hours)
+                    if re.findall(r'^\d{1}:\d{2}',matches[0]):
+                        open = re.sub(r'^(\d{1}):(\d{2})',r'0\1:\2',matches[0])
+                    else:
+                        open = matches[0]
+                    h,m = matches[1].split(":")
+                    close = f'{int(h)+12}:{m}'
+                r_hours.append([day,[open,close]])
+        p['r_hours'] = r_hours
+    print("done preprocessing places hours....")
+    print("computing scores .... ")
+    t_list = compute_scores(raw_list,clf=ReviewClassifier())
+    print("done computing scorse...")
+    sorted_t_list = sorted(t_list, key=lambda e: e['study_confidence'], reverse=True)
+    k = 20
+    result = list(map(lambda e : {'place_id': e['place_id'],
+                                  'display_name' : e['display_name'],
+                                  'p_type' : e['p_type'],
+                                  'rating' : e['rating'],
+                                  'rating_count' : e['rating_count'],
+                                  'location' : e['location'],
+                                  'price_level' : e['price_level'],
+                                  'price_range' : e['price_range'],
+                                  'r_hours' : e['r_hours'],
+                                  'study_confidence' : float(e['study_confidence'])},sorted_t_list[:k]))
+    
+    print(result)
+
     print("end lambda testing........")
     return {
         "statusCode": 200,
@@ -88,8 +115,9 @@ def lambda_handler(event, context):
         "body": json.dumps({"msg": "foo bar says hi"})
     }
 
-def filter_cafes(raw_data,clf) -> list:
+def compute_scores(raw_data,clf) -> list:
     for place in raw_data:
+        review_scores = []
         for review in place['reviews_list']:
             sentence_list = []
             for s in re.split(r'[.!?]+', str(review[1]), maxsplit=0):
@@ -102,14 +130,12 @@ def filter_cafes(raw_data,clf) -> list:
                 posterior <- [A0, A1, A2] with A_i representing ndarray of probabilities
                     with A_i_j representing P(s_j=i) for s_j in input S = [s1,s2,....sk]
                     where S are the sentences that make up the review
-            bayesian assumptions
             '''
             posterior = clf.predict(sentence_list)
             A0_max,A1_max,A2_mean = np.max(posterior[:,0]), np.max(posterior[:,1]),np.mean(posterior[:,2])
-            print(posterior,A0_max,A1_max,A2_mean)
-            # normalized_s0
-            print("--------------------------")
-        print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+            study_score = A0_max * (1 - A1_max)
+            review_scores.append(study_score)
+        place['study_confidence'] = np.max(review_scores)
     print("............end filtering cafes............")
     return raw_data
 
