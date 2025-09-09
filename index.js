@@ -33,8 +33,11 @@ async function init_script() {
         const params = new URLSearchParams();
         params.append("place_id",selectedPlace);
         try {
-            const response = await fetch(`https://bpjhf33406.execute-api.us-east-2.amazonaws.com/getNearbyCafes?${params}`);
+            console.log("sending request to lambda....")
+            const s = Date.now();
+            const response = await fetch(`https://6xraxq80be.execute-api.us-east-1.amazonaws.com/getNearbyCafes?${params}`);
             const res_body = await response.json();
+            console.log("lambda response....toook....",(Date.now()-s)/1000,"seconds")
             console.log(res_body);
         } catch (err){
             console.log("error with fetch api",err);

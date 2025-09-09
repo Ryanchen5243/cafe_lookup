@@ -1,17 +1,11 @@
-# Base image for AWS Lambda Python 3.11
 FROM public.ecr.aws/lambda/python:3.11
 
-# Copy and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-# Copy only what’s needed for inference
-COPY src/data_collection.py ./src/
-COPY src/ReviewClassifier.py ./src/
-COPY models/ ./models/
+COPY src/ ${LAMBDA_TASK_ROOT}/src/
+COPY models/ ${LAMBDA_TASK_ROOT}/models/
 
-# Add src/ to PYTHONPATH so imports work
-ENV PYTHONPATH=/var/task/src
+ENV PYTHONPATH=${LAMBDA_TASK_ROOT}/src
 
-# Lambda handler entry point
 CMD ["src.data_collection.lambda_handler"]
