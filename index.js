@@ -13,7 +13,7 @@ async function init_script() {
     ];
     map.fitBounds(manhattanBounds, {minZoom: 16});
     map.setMinZoom(map.getZoom());
-    console.log("tester....")
+    console.log("foobri says hi...")
 
     // google autocomplete
     await google.maps.importLibrary("places");
