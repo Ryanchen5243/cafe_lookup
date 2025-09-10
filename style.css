@@ -1,3 +1,108 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f3f4f6; /* light background */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center content horizontally */
+    gap: 20px;           /* spacing between elements */
+    padding: 40px 20px;  /* spacing around page edges */
+}
+
+#main-title {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #111827;
+    text-align: center;
+}
+
+#main-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 600px; /* optional, keeps content contained */
+}
+
+
+/* Color spans container */
+body > div:first-of-type {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+span {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+/* Search container styling */
+#search_container {
+    width: 90%;            /* responsive width */
+    max-width: 500px;      /* limit width on large screens */
+    padding: 30px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    text-align: center;     /* center children horizontally */
+    display: flex;
+    flex-direction: column; /* stack children vertically */
+    gap: 20px;
+}
+
+/* Button styling */
+.fancy-btn {
+    padding: 12px 20px;
+    background-color: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.fancy-btn:hover {
+    background-color: #1e40af;
+}
+
+/* Footer h2 styling */
+h2 {
+    font-size: 1.5rem;
+    color: #374151;
+    text-align: center;
+    margin-top: 40px;
+}
+
+#c1 {
+    color: #ed6a5a;
+    font-weight:bold;
+    font-size:50px;
+}
+#c2 {
+    color: #f4f1bb;
+    font-weight:bold;
+    font-size:50px;
+}
+#c3 {
+    color: #9bc1bc;
+    font-weight:bold;
+    font-size:50px;
+}
+#c4 {
+    color: #e6ebe0;
+    font-weight:bold;
+    font-size:50px;
+}
+#c5 {
+    color: #36c9c6;
+    font-weight:bold;
+    font-size:50px;
+}
+
 #map {
     width: 100%;
     max-width: 700px;
@@ -8,30 +113,6 @@
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     margin: 20px auto;
-}
-
-.fancy-btn {
-    background: linear-gradient(135deg, #6b73ff, #000dff);
-    color: white;
-    font-weight: 600;
-    padding: 12px 28px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
-    font-family: Arial, sans-serif;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-.fancy-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-    background: linear-gradient(135deg, #5a63e0, #000bbf);
-}
-.fancy-btn span {
-    font-size: 16px;
 }
 
 @media (max-width: 768px) {

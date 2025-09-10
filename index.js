@@ -1,19 +1,19 @@
 async function init_script() {
-    // leaflet map
-    var map = L.map('map').setView([40.7127,-74.0059],1);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution:
-            '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> & <a href="https://carto.com">Carto</a>',
-        subdomains: 'abcd',
-        maxZoom: 20
-    }).addTo(map);
-    var manhattanBounds = [
-        [40.698, -74.029],
-        [40.877, -73.899]
-    ];
-    map.fitBounds(manhattanBounds, {minZoom: 16});
-    map.setMinZoom(map.getZoom());
-    console.log("foobri says hi...")
+    // map component
+    // var map = L.map('map').setView([40.7127,-74.0059],1);
+    // L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    //     attribution:
+    //         '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> & <a href="https://carto.com">Carto</a>',
+    //     subdomains: 'abcd',
+    //     maxZoom: 20
+    // }).addTo(map);
+    // var manhattanBounds = [
+    //     [40.698, -74.029],
+    //     [40.877, -73.899]
+    // ];
+    // map.fitBounds(manhattanBounds, {minZoom: 16});
+    // map.setMinZoom(map.getZoom());
+    // console.log("foobri says hi...")
 
     // google autocomplete
     await google.maps.importLibrary("places");
