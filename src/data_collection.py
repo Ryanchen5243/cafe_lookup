@@ -65,6 +65,14 @@ def lambda_handler(event, context):
                     "price_level": None if 'priceLevel' not in place else place['priceLevel'],
                     "price_range": None if 'priceRange' not in place else [int(place['priceRange']['startPrice']['units']),int(place['priceRange']['endPrice']['units'])]
                 })
+    place_id_set = set()
+    unique_places = []
+    for p in raw_list:
+        if p["place_id"] in place_id_set:
+            continue
+        unique_places.append(p)
+        place_id_set.add(p["place_id"])
+    raw_list = unique_places
     # display api results
     print(f'Total of {len(raw_list)} places returned from api')
     print("preprocessing places hours....")
@@ -89,7 +97,6 @@ def lambda_handler(event, context):
                     close = f'{int(h)+12}:{m}'
                 r_hours.append([day,[open,close]])
         p['r_hours'] = r_hours
-    print("done preprocessing places hours....")
     print("computing scores .... ")
     t_list = compute_scores(raw_list,clf=ReviewClassifier())
     print("done computing scorse...")
@@ -105,6 +112,7 @@ def lambda_handler(event, context):
                                   'price_range' : e['price_range'],
                                   'r_hours' : e['r_hours'],
                                   'study_confidence' : float(e['study_confidence'])},sorted_t_list[:k]))
+    print(f"sortedtlist -> {len(sorted_t_list)} ; result -> {len(result)}")
     print("end lambda testing........")
     return {
         "statusCode": 200,
@@ -136,7 +144,6 @@ def compute_scores(raw_data,clf) -> list:
             study_score = A0_max * (1 - A1_max)
             review_scores.append(study_score)
         place['study_confidence'] = np.max(review_scores)
-    print("............end filtering cafes............")
     return raw_data
 
 if __name__ == "__main__":
