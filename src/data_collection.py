@@ -6,6 +6,32 @@ from ReviewClassifier import ReviewClassifier
 import numpy as np
 
 def lambda_handler(event, context):
+    ALLOWED_ORIGINS = ["http://127.0.0.1:8080","http://localhost:8080","https://foobrix.com"]
+    method = event.get("requestContext",{}).get("http",{}).get("method","")
+    origin = event.get("headers",{}).get("origin","")
+    cors_headers = {}
+    if origin in ALLOWED_ORIGINS:
+        cors_headers = {
+            "Access-Control-Allow-Origin" : origin,
+            "Access-Control-Allow-Methods": "GET,OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type"
+        }
+    # preflight request
+    if method == "OPTIONS":
+        return {
+            "statusCode": 200,
+            "headers": cors_headers,
+            "body": ""
+        }
+    if method != "GET":
+        return{
+            "statusCode": 405,
+            "body": "Method Not Allowed"
+        }
+    
+    # handle get request...
+
+
     print("start testing lambda ...")
     # fetch location detail from user requested place
     place_detail_request = Request(f"https://places.googleapis.com/v1/places/{event['queryStringParameters']['place_id']}")
@@ -116,10 +142,7 @@ def lambda_handler(event, context):
     print("end lambda testing........")
     return {
         "statusCode": 200,
-        "headers": {
-            "Access-Control-Allow-Origin": "http://127.0.0.1:8080",
-            "Content-Type": "application/json"
-        },
+        "headers": cors_headers,
         "body": json.dumps({"results": result})
     }
 
