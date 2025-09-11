@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         cors_headers = {
             "Access-Control-Allow-Origin" : origin,
             "Access-Control-Allow-Methods": "GET,OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type"
+            "Access-Control-Allow-Headers": "Content-Type,X-Goog-Api-Key,X-Goog-FieldMask"
         }
     # preflight request
     if method == "OPTIONS":
