@@ -35,26 +35,67 @@ function displayCafeData(){
   // ['place_id', 'display_name', 'p_type', 'rating', 
   //   'rating_count', 'location', 'price_level', 
   //   'price_range', 'r_hours', 'study_confidence']
+  // 
+  // Starbucks
+  // **** 4.1 (312 reviews)  ->>>>> Score
+  // ! East Village $$ Open until...
+
   console.log(api_data);
+  let bounds = L.latLngBounds([]);
   api_data["results"].forEach(element => {
     const cafe_el = document.createElement("div");
     cafe_el.classList.add("cafe_result");
     const location = Object.fromEntries(element["location"]);
-    L.marker([location["lat"], location["long"]]).addTo(map);
+    L.marker([location.lat, location.long]).addTo(map);
     cafe_el.onclick = () => {
-      map.flyTo([location["lat"], location["long"]],20)
+      map.flyTo([location.lat, location.long],20)
     }
 
-    const child_1 = document.createElement("span");
+    // console.log(element["display_name"]);
+    // console.log(element["p_type"]);
+    // console.log(element["rating"]);
+    // console.log(element["rating_count"]);
+    // console.log(element["price_level"]);
+    console.log(element["price_range"]);
+    console.log(element["r_hours"]);
+    console.log(element["study_confidence"]);
+    console.log("-----------------------------------------------------")
+
+
+    const price_level_mapping = {
+      PRICE_LEVEL_UNSPECIFIED: "Price Not specified",
+      PRICE_LEVEL_FREE: "Free",
+      PRICE_LEVEL_INEXPENSIVE: "$",
+      PRICE_LEVEL_MODERATE: "$$",
+      PRICE_LEVEL_EXPENSIVE: "$$$",
+      PRICE_LEVEL_VERY_EXPENSIVE: "$$$$"
+    };
+
+    const child_1 = document.createElement("div");
     child_1.textContent = element["display_name"]
     child_1.classList.add("cafe_display_name");
-    const child_2 = document.createElement("span");
-    child_2.textContent = `Study Confidence: ${(element["study_confidence"] * 100).toFixed(0)}%`;
+    const child_2 = document.createElement("p");
+    child_2.textContent = `${element["rating"]} (${element["rating_count"]} reviews)`
+    const child_3 = document.createElement("div");
+    child_3.classList.add("cafe_result_location_price_detail");
+    const icon_container = document.createElement("div");
+    icon_container.id = "icon-container";
+    const icon = document.createElement("i");
+    icon.classList.add('fa-solid', 'fa-location-dot');
+    icon_container.appendChild(icon);
+    const price_level_el = document.createElement("div");
+    price_level_el.textContent = `location ${element["price_level"] === null ? "": price_level_mapping[element["price_level"]]} hours data...`;
+    child_3.appendChild(icon_container);
+    child_3.appendChild(price_level_el);
     cafe_el.appendChild(child_1);
     cafe_el.appendChild(child_2);
+    cafe_el.appendChild(child_3);
     document.getElementById("info-panel").appendChild(cafe_el);
+    // `Study Confidence: ${(element["study_confidence"] * 100).toFixed(0)}%`;
+    bounds.extend([location.lat,location.long]);
   });
-  api_data = null; // reset
+  map.fitBounds(bounds);
+  api_data = null;
 }
 
 async function init_script() {
@@ -90,6 +131,9 @@ document.getElementById("fetchBtn").addEventListener("click", async () => {
     const data = await response.json();
     console.log(
       "lambda response took..... ",
+      "\n",
+      (Date.now() - s),
+      "\n",
       (Date.now() - s) / 1000,
       " seconds"
     );
