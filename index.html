@@ -28,13 +28,6 @@
     <div id="main-page">
       <h1 id="site-name">Sip & Study</h1>
       <h1 id="main-title">Discover Your Perfect Study Spot</h1>
-      <!-- <div>
-        <span id="c1">color 1</span>
-        <span id="c2">color 2</span>
-        <span id="c3">color 3</span>
-        <span id="c4">color 4</span>
-        <span id="c5">color 5</span>
-      </div> -->
       <div id="search_container">
         <div id="autocomplete"></div>
         <button id="fetchBtn" class="fancy-btn">Find Cafés Near Me</button>
@@ -44,6 +37,14 @@
     <div id="res-page">
       <div id="map" style="flex: 1"></div>
       <div id="info-panel" style="flex: 1"></div>
+    </div>
+    <div id="detail-modal" class="modal">
+      <div class="modal-content">
+        <span id="modal-close">&times;</span>
+        <div id="modal-body">
+          <!-- Details to be injected here -->
+        </div>
+      </div>
     </div>
 
     <script>

@@ -30,37 +30,42 @@ function showMainPage(toShow) {
   }
 }
 
-function displayCafeData(){
+function displayCafeData() {
   if (!api_data) return;
-  // ['place_id', 'display_name', 'p_type', 'rating', 
-  //   'rating_count', 'location', 'price_level', 
-  //   'price_range', 'r_hours', 'study_confidence']
-  // 
+  // ['place_id', 'display_name', 'p_type', 'rating',
+  //   'rating_count', 'location', 'price_level',
+  //   ((((((->>>>>>'price_range', 'r_hours', 'study_confidence', 'p_address']
+  //
   // Starbucks
   // **** 4.1 (312 reviews)  ->>>>> Score
   // ! East Village $$ Open until...
 
-  console.log(api_data);
   let bounds = L.latLngBounds([]);
-  api_data["results"].forEach(element => {
+  const curr_time = new Date();
+  api_data["results"].forEach((element) => {
     const cafe_el = document.createElement("div");
     cafe_el.classList.add("cafe_result");
     const location = Object.fromEntries(element["location"]);
-    L.marker([location.lat, location.long]).addTo(map);
+    const marker = L.marker([location.lat, location.long]).addTo(map);
+
+    const popup_el = document.createElement("div");
+    popup_el.classList.add("popup-content");
+    const popup_el_c1 = document.createElement("h3");
+    popup_el_c1.classList.add("popup-title");
+    popup_el_c1.textContent = `${element["display_name"]}`;
+    const popup_el_c2 = document.createElement("button");
+    popup_el_c2.classList.add("view-details-btn");
+    popup_el_c2.textContent = "View Details";
+    popup_el_c2.onclick = () => {
+      showModal(element);
+    };
+    popup_el.appendChild(popup_el_c1);
+    popup_el.appendChild(popup_el_c2);
+    marker.bindPopup(popup_el);
     cafe_el.onclick = () => {
-      map.flyTo([location.lat, location.long],20)
-    }
-
-    // console.log(element["display_name"]);
-    // console.log(element["p_type"]);
-    // console.log(element["rating"]);
-    // console.log(element["rating_count"]);
-    // console.log(element["price_level"]);
-    console.log(element["price_range"]);
-    console.log(element["r_hours"]);
-    console.log(element["study_confidence"]);
-    console.log("-----------------------------------------------------")
-
+      map.flyTo([location.lat, location.long], 20);
+      marker.openPopup();
+    };
 
     const price_level_mapping = {
       PRICE_LEVEL_UNSPECIFIED: "Price Not specified",
@@ -68,23 +73,39 @@ function displayCafeData(){
       PRICE_LEVEL_INEXPENSIVE: "$",
       PRICE_LEVEL_MODERATE: "$$",
       PRICE_LEVEL_EXPENSIVE: "$$$",
-      PRICE_LEVEL_VERY_EXPENSIVE: "$$$$"
+      PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
     };
 
     const child_1 = document.createElement("div");
-    child_1.textContent = element["display_name"]
+    child_1.textContent = element["display_name"];
     child_1.classList.add("cafe_display_name");
-    const child_2 = document.createElement("p");
-    child_2.textContent = `${element["rating"]} (${element["rating_count"]} reviews)`
+    const child_2 = document.createElement("div");
+    child_2.classList.add("cafe_result_rating");
+    const child_2_1 = document.createElement("div");
+    child_2_1.classList.add("cafe_result_stars");
+    for (let i = 0; i < 5; i++) {
+      const star = document.createElement("span");
+      star.classList.add("fa");
+      star.classList.add("fa-star");
+      child_2_1.appendChild(star);
+    }
+    const child_2_2 = document.createElement("div");
+    child_2_2.textContent = `${element["rating"]} (${element["rating_count"]} reviews)`;
+    child_2.appendChild(child_2_1);
+    child_2.appendChild(child_2_2);
     const child_3 = document.createElement("div");
     child_3.classList.add("cafe_result_location_price_detail");
     const icon_container = document.createElement("div");
     icon_container.id = "icon-container";
     const icon = document.createElement("i");
-    icon.classList.add('fa-solid', 'fa-location-dot');
+    icon.classList.add("fa-solid", "fa-location-dot");
     icon_container.appendChild(icon);
     const price_level_el = document.createElement("div");
-    price_level_el.textContent = `location ${element["price_level"] === null ? "": price_level_mapping[element["price_level"]]} hours data...`;
+    price_level_el.textContent = `${element["p_address"]["locality"]} ${
+      element["price_level"] === null
+        ? ""
+        : price_level_mapping[element["price_level"]]
+    } ${isOpenNow(curr_time, Object.fromEntries(element["r_hours"]))}`;
     child_3.appendChild(icon_container);
     child_3.appendChild(price_level_el);
     cafe_el.appendChild(child_1);
@@ -92,11 +113,39 @@ function displayCafeData(){
     cafe_el.appendChild(child_3);
     document.getElementById("info-panel").appendChild(cafe_el);
     // `Study Confidence: ${(element["study_confidence"] * 100).toFixed(0)}%`;
-    bounds.extend([location.lat,location.long]);
+    bounds.extend([location.lat, location.long]);
   });
   map.fitBounds(bounds);
   api_data = null;
 }
+
+function isOpenNow(now, r_hours) {
+  const store_hours_today =
+    r_hours[now.toLocaleDateString("en-US", { weekday: "long" })];
+  if (!store_hours_today) return "";
+  const today_open = new Date(Date.now());
+  today_open.setHours(Number(store_hours_today[0].split(":")[0]));
+  today_open.setMinutes(Number(store_hours_today[0].split(":")[1]));
+  const today_close = new Date(Date.now());
+  today_close.setHours(Number(store_hours_today[1].split(":")[0]));
+  today_close.setMinutes(Number(store_hours_today[1].split(":")[1]));
+  if (today_open <= now && now <= today_close) {
+    return `Open until ${String(today_close.getHours()).padStart(
+      2,
+      "0"
+    )}:${String(today_close.getMinutes()).padStart(2, "0")}`;
+  }
+  return "Closed";
+}
+function showModal(cafe) {
+  const modal = document.getElementById("detail-modal");
+  const body = document.getElementById("modal-body");
+  body.innerHTML = "";
+  modal.style.display = "block";
+}
+document.getElementById('modal-close').onclick = () => {
+  document.getElementById('detail-modal').style.display = 'none';
+};
 
 async function init_script() {
   await google.maps.importLibrary("places");
@@ -132,7 +181,7 @@ document.getElementById("fetchBtn").addEventListener("click", async () => {
     console.log(
       "lambda response took..... ",
       "\n",
-      (Date.now() - s),
+      Date.now() - s,
       "\n",
       (Date.now() - s) / 1000,
       " seconds"
