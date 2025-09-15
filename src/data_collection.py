@@ -58,7 +58,7 @@ def lambda_handler(event, context):
                         'latitude': req_lat,
                         'longitude': req_lon,
                     },
-                    'radius': 500.0,
+                    'radius': 5000.0,
                 }
             }
         }
@@ -89,7 +89,7 @@ def lambda_handler(event, context):
                     "today_hours": None if 'currentOpeningHours' not in place else place['currentOpeningHours'],
                     "weekly_hours": None if 'regularOpeningHours' not in place else place['regularOpeningHours'],
                     "price_level": None if 'priceLevel' not in place else place['priceLevel'],
-                    "price_range": None if 'priceRange' not in place else [int(place['priceRange']['startPrice']['units']),int(place['priceRange']['endPrice']['units'])],
+                    "price_range": None if 'priceRange' not in place or not place['priceRange'] or 'startPrice' not in place['priceRange'] or 'endPrice' not in place['priceRange'] else [int(place['priceRange']['startPrice']['units']), int(place['priceRange']['endPrice']['units'])],
                     "p_address": None if 'postalAddress' not in place else place['postalAddress']
                 })
     place_id_set = set()
