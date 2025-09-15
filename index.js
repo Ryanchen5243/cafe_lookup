@@ -122,7 +122,9 @@ function displayCafeData() {
 function isOpenNow(now, r_hours) {
   const store_hours_today =
     r_hours[now.toLocaleDateString("en-US", { weekday: "long" })];
-  if (!store_hours_today) return "";
+  // check for nullity
+  if (!store_hours_today || store_hours_today?.some?.((v) => v === null))
+    return "";
   const today_open = new Date(Date.now());
   today_open.setHours(Number(store_hours_today[0].split(":")[0]));
   today_open.setMinutes(Number(store_hours_today[0].split(":")[1]));
@@ -143,8 +145,8 @@ function showModal(cafe) {
   body.innerHTML = "";
   modal.style.display = "block";
 }
-document.getElementById('modal-close').onclick = () => {
-  document.getElementById('detail-modal').style.display = 'none';
+document.getElementById("modal-close").onclick = () => {
+  document.getElementById("detail-modal").style.display = "none";
 };
 
 async function init_script() {
