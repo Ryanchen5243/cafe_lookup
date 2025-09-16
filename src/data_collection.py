@@ -7,7 +7,7 @@ from ReviewClassifier import ReviewClassifier
 import numpy as np
 
 def lambda_handler(event, context):
-    ALLOWED_ORIGINS = ["http://127.0.0.1:8080","http://localhost:8080","https://foobrix.com"]
+    ALLOWED_ORIGINS = ["http://127.0.0.1:8080","http://localhost:8080","https://foobrix.com","https://cafevo.net"]
     method = event.get("requestContext",{}).get("http",{}).get("method","")
     origin = event.get("headers",{}).get("origin","")
     cors_headers = {}
