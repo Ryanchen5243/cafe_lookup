@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import re
 from urllib.request import urlopen,Request
@@ -124,9 +125,7 @@ def lambda_handler(event, context):
                     close = f'{int(h)+12}:{m}'
                 r_hours.append([day,[open,close]])
         p['r_hours'] = r_hours
-    print("computing scores .... ")
-    t_list = compute_scores(raw_list,clf=ReviewClassifier())
-    print("done computing scorse...")
+    t_list = batch_compute_scores(raw_list,clf=ReviewClassifier())
     sorted_t_list = sorted(t_list, key=lambda e: e['study_confidence'], reverse=True)
     k = 20
     result = list(map(lambda e : {'place_id': e['place_id'],
@@ -148,6 +147,38 @@ def lambda_handler(event, context):
         "body": json.dumps({"results": result})
     }
 
+def batch_compute_scores(raw_data,clf) -> list:
+    sentence_list = []
+    p_map = defaultdict(list)
+    for place in raw_data:
+        p_id = place['place_id']
+        r_idx = 0
+        for review in place['reviews_list']:
+            s_helper = []
+            for s in re.split(r'[.!?]+', str(review[1]), maxsplit=0):
+                s = re.sub(r'\n',' ',s).strip()
+                if s:
+                    s_helper.append(len(sentence_list))
+                    sentence_list.append(s)
+            p_map[p_id].append(s_helper)
+            r_idx += 1
+    batch_pred = clf.predict(sentence_list)
+    score_map = {}
+    for p_id,idx_lists in p_map.items():
+        r_scores = []
+        print(f"{p_id} has: ")
+        for idx_list in idx_lists:
+            if not idx_list:
+                continue
+            start_ind,end_ind = idx_list[0],idx_list[-1] + 1
+            posterior = batch_pred[start_ind:end_ind]
+            A0_max,A1_max,A2_mean = np.max(posterior[:,0]), np.max(posterior[:,1]),np.mean(posterior[:,2])
+            r_scores.append(A0_max * (1 - A1_max))
+        score_map[p_id] = np.max(r_scores)
+    for place in raw_data:
+        place["study_confidence"] = score_map[place["place_id"]]
+    return raw_data
+
 def compute_scores(raw_data,clf) -> list:
     for place in raw_data:
         review_scores = []
@@ -164,11 +195,12 @@ def compute_scores(raw_data,clf) -> list:
                     with A_i_j representing P(s_j=i) for s_j in input S = [s1,s2,....sk]
                     where S are the sentences that make up the review
             '''
-            posterior = clf.predict(sentence_list)
+            posterior = clf.predict(sentence_list) # need to optimize
             A0_max,A1_max,A2_mean = np.max(posterior[:,0]), np.max(posterior[:,1]),np.mean(posterior[:,2])
             study_score = A0_max * (1 - A1_max)
             review_scores.append(study_score)
         place['study_confidence'] = np.max(review_scores)
+        print("----------------------------------")
     return raw_data
 
 if __name__ == "__main__":
