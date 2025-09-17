@@ -5,6 +5,7 @@ from urllib.request import urlopen,Request
 import os
 from ReviewClassifier import ReviewClassifier
 import numpy as np
+from sentence_transformers import SentenceTransformer
 
 def lambda_handler(event, context):
     ALLOWED_ORIGINS = ["http://127.0.0.1:8080","http://localhost:8080","https://foobrix.com","https://cafevo.net"]
@@ -261,4 +262,6 @@ if __name__ == "__main__":
         },
         "isBase64Encoded":False
     }
+    if not os.path.exists('models/all_minilm_l6_v2'):
+        SentenceTransformer("all-MiniLM-L6-v2").save('models/all_minilm_l6_v2')
     lambda_handler(test_event,None)

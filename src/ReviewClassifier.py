@@ -1,9 +1,9 @@
 from sentence_transformers import SentenceTransformer
 import joblib
 class ReviewClassifier:
-    def __init__(self,model="models/svm_classifier.pkl",embedder="all-MiniLM-L6-v2") -> None:
+    def __init__(self,model="models/svm_classifier.pkl") -> None:
         self.classifier = joblib.load(model)
-        self.embedder = SentenceTransformer(embedder)
+        self.embedder = SentenceTransformer("models/all_minilm_l6_v2")
     def predict(self,review_list) -> int:
         emb = self.embedder.encode(
             review_list,
