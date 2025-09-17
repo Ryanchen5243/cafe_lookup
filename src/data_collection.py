@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                             data=json.dumps(body).encode('utf-8'))
         search_nearby_request.add_header('Content-Type', 'application/json')
         search_nearby_request.add_header('X-Goog-Api-Key', os.environ['GMAPS_API_KEY_BACKEND'])
-        search_nearby_request.add_header('X-Goog-FieldMask', 'places.id,places.displayName,places.primaryType,places.types,places.rating,places.reviews,places.reviewSummary,places.userRatingCount,places.dineIn,places.location,places.regularOpeningHours,places.currentOpeningHours,places.priceLevel,places.priceRange,places.postalAddress')
+        search_nearby_request.add_header('X-Goog-FieldMask', 'places.id,places.displayName,places.primaryType,places.types,places.rating,places.reviews,places.reviewSummary,places.userRatingCount,places.dineIn,places.location,places.regularOpeningHours,places.priceLevel,places.priceRange,places.postalAddress,places.nationalPhoneNumber')
         print("making request to nearby search....")
         with urlopen(search_nearby_request) as response:
             res_obj = json.loads(response.read())
@@ -87,11 +87,14 @@ def lambda_handler(event, context):
                     "review_summary": None if 'reviewSummary' not in place else place['reviewSummary'],
                     "reviews_list": [] if 'reviews' not in place else [(None,None) if 'text' not in r.keys() else (r['rating'],r['text']['text']) for r in place['reviews']],
                     "location": [["lat",place['location']['latitude']],["long",place['location']['longitude']]],
-                    "today_hours": None if 'currentOpeningHours' not in place else place['currentOpeningHours'],
                     "weekly_hours": None if 'regularOpeningHours' not in place else place['regularOpeningHours'],
+                    "next_open_close": None if 'regularOpeningHours' not in place else (
+                        {"open_now": True, "next_close": place['regularOpeningHours']['nextCloseTime']} if place['regularOpeningHours']['openNow'] == True \
+                            else {"open_now": False, "next_open": place['regularOpeningHours']['nextOpenTime']}),
                     "price_level": None if 'priceLevel' not in place else place['priceLevel'],
                     "price_range": None if 'priceRange' not in place or not place['priceRange'] or 'startPrice' not in place['priceRange'] or 'endPrice' not in place['priceRange'] else [int(place['priceRange']['startPrice']['units']), int(place['priceRange']['endPrice']['units'])],
-                    "p_address": None if 'postalAddress' not in place else place['postalAddress']
+                    "p_address": None if 'postalAddress' not in place else place['postalAddress'],
+                    'phone_no': None if 'nationalPhoneNumber' not in place else place['nationalPhoneNumber']
                 })
     place_id_set = set()
     unique_places = []
@@ -133,12 +136,15 @@ def lambda_handler(event, context):
                                   'p_type' : e['p_type'],
                                   'rating' : e['rating'],
                                   'rating_count' : e['rating_count'],
+                                  'review_summary': e['review_summary'],
                                   'location' : e['location'],
+                                  'next_open_close': e['next_open_close'],
                                   'price_level' : e['price_level'],
                                   'price_range' : e['price_range'],
                                   'r_hours' : e['r_hours'],
                                   'study_confidence' : float(e['study_confidence']),
-                                  'p_address': e['p_address']},sorted_t_list[:k]))
+                                  'p_address': e['p_address'],
+                                  'phone_no': e['phone_no']},sorted_t_list[:k]))
     print(result)
     print("end lambda testing........")
     return {
