@@ -89,8 +89,10 @@ def lambda_handler(event, context):
                     "location": [["lat",place['location']['latitude']],["long",place['location']['longitude']]],
                     "weekly_hours": None if 'regularOpeningHours' not in place else place['regularOpeningHours'],
                     "next_open_close": None if 'regularOpeningHours' not in place else (
-                        {"open_now": True, "next_close": place['regularOpeningHours']['nextCloseTime']} if place['regularOpeningHours']['openNow'] == True \
-                            else {"open_now": False, "next_open": place['regularOpeningHours']['nextOpenTime']}),
+                        {"open_now": True, "next_close": place.get('regularOpeningHours', {}).get('nextCloseTime', '')}
+                        if place.get('regularOpeningHours', {}).get('openNow') is True
+                        else {"open_now": False, "next_open": place.get('regularOpeningHours', {}).get('nextOpenTime', '')}
+                    ),
                     "price_level": None if 'priceLevel' not in place else place['priceLevel'],
                     "price_range": None if 'priceRange' not in place or not place['priceRange'] or 'startPrice' not in place['priceRange'] or 'endPrice' not in place['priceRange'] else [int(place['priceRange']['startPrice']['units']), int(place['priceRange']['endPrice']['units'])],
                     "p_address": None if 'postalAddress' not in place else place['postalAddress'],
