@@ -234,14 +234,14 @@ h2 {
 }
 
 .cafe_result_rating {
-  display:flex;
+  display: flex;
   gap: 0.5em;
 }
 .cafe_result_stars > span {
   padding: 0;
 }
 .fa-star {
-  color:gold;
+  color: gold;
 }
 
 .popup-content {
@@ -280,7 +280,7 @@ h2 {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
@@ -292,7 +292,7 @@ h2 {
   min-width: 400px;
   min-height: 500px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 #modal-close {
@@ -303,7 +303,8 @@ h2 {
 .modal-body-bottom-container {
   display: flex;
 }
-.modal-body-con-left,.modal-body-con-right {
+.modal-body-con-left,
+.modal-body-con-right {
   flex: 1 1 0;
   width: 50%;
   padding: 0 15px;
@@ -316,12 +317,14 @@ h2 {
   font-weight: 700;
   color: #333;
   margin-bottom: 20px;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Helvetica Neue", Arial, sans-serif;
   letter-spacing: 0.5px;
 }
 
-#modal-item-addr-line,#modal-item-phone-line,#modal-item-price-line {
-  display:flex;
+#modal-item-addr-line,
+#modal-item-phone-line,
+#modal-item-price-line {
+  display: flex;
   align-items: center;
   gap: 8px;
   margin: 0;
@@ -332,26 +335,74 @@ h2 {
   margin: 10px 0;
   font-size: 14px;
 }
+.modal-item-hours-dropdown.open .modal-item-hours-list {
+  opacity: 1;
+}
 
 .modal-item-hours-toggle {
   width: 100%;
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 8px 12px;
+  background: linear-gradient(135deg, #f9f9f9, #f1f1f1);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 14px;
   cursor: pointer;
   text-align: left;
   font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.modal-item-hours-toggle:hover {
+  background: linear-gradient(135deg, #f1f1f1, #e9e9e9);
+  transform: translateY(-1px);
 }
 
 .modal-item-hours-list {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+  padding-left: 10px; /* indent for elegance */
+  border-left: 2px solid #eee;
+  margin-top: 6px;
 }
 
 .modal-item-hours-list p {
   margin: 3px 0;
+  display: flex;
+  gap: 6px; /* space between spans */
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  color: #444;
+}
+
+.modal-item-hours-list p:hover {
+  color: #000;
+}
+
+.status-open {
+  color: green;
+  font-weight: 600;
+}
+.status-closed {
+  color: goldenrod;
+  font-weight: 600;
+}
+
+.modal-item-hours-list p .day {
+  width: 50px; /* fixed width for all day names to align times */
+  font-weight: 600;
+}
+
+.modal-item-hours-list p .open-time {
+  color: green;
+  font-weight: 500;
+}
+
+.modal-item-hours-list p .close-time {
+  color: goldenrod;
+  font-weight: 500;
 }
 
 /* --- Mobile Friendly Adjustments --- */

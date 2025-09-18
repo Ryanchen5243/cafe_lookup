@@ -161,7 +161,7 @@ function isOpenNow(now, r_hours) {
 function showModal(cafe) {
   const modal = document.getElementById("detail-modal");
   const body = document.getElementById("modal-body");
-  // ,next_open_close,
+  // ,,
   const place_name = document.createElement("h1");
   place_name.textContent = `${cafe["display_name"]}`;
   place_name.id = "modal-item-display-name";
@@ -208,29 +208,41 @@ function showModal(cafe) {
     Saturday: "Sat",
     Sunday: "Sun",
   };
+  const next_open_close_str = `${
+      (cafe?.next_open_close?.open_now
+        ? `<span class="status-open">Open.</span> Closes ${(new Date(cafe?.next_open_close?.next_close)).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) || ""}`
+        : `<span class="status-closed">Closed.</span> Opens ${(new Date(cafe.next_open_close.next_open)).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) || ""}`) ||
+      "Opening Hours ▾"
+    }`;
   if (cafe?.r_hours != null) {
     const hours_dropdown = document.createElement("div");
     hours_dropdown.classList.add("modal-item-hours-dropdown");
     const hours_button = document.createElement("button");
     hours_button.classList.add("modal-item-hours-toggle");
-    hours_button.textContent = "Opening Hours ▾";
+    hours_button.innerHTML = next_open_close_str;
     const hours_list = document.createElement("div");
     hours_list.classList.add("modal-item-hours-list");
     hours_dropdown.append(hours_button, hours_list);
     cafe.r_hours.forEach((e) => {
       const e_i = document.createElement("p");
-      e_i.textContent = `${daysMap[e[0]]}: ${e[1][0]} - ${e[1][1]}`;
+      e_i.innerHTML = `
+        <span class="day">${daysMap[e[0]]}:</span> 
+        <span class="open-time">${formatTimeString(e[1][0])}</span> - 
+        <span class="close-time">${formatTimeString(e[1][1])}</span>
+      `;
       hours_list.appendChild(e_i);
     });
     hours_dropdown.addEventListener("click", () => {
       if (hours_list.style.maxHeight && hours_list.style.maxHeight !== "0px") {
         hours_list.style.maxHeight = "0";
-        hours_button.textContent = "Opening Hours ▾";
+        hours_dropdown.classList.remove("open");
+        hours_button.innerHTML = next_open_close_str;
       } else {
         hours_list.style.maxHeight = hours_list.scrollHeight + "px";
-        hours_button.textContent = "Opening Hours ▴";
+        hours_dropdown.classList.add("open");
+        hours_button.innerHTML = next_open_close_str;
       }
-    })
+    });
     modal_body_container_el_1.append(hours_dropdown);
   }
   // ------------------------------------------------------------------------
@@ -302,3 +314,11 @@ document.getElementById("fetchBtn").addEventListener("click", async () => {
     console.error(err);
   }
 });
+
+function formatTimeString(timeStr) { // "hh:mm" 24 hr
+  if (!timeStr) return "";
+  let [hours, minutes] = timeStr.split(":").map(Number);
+  const ampm = hours < 12 ? "AM" : "PM";
+  hours = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hours}:${String(minutes).padStart(2,"0")} ${ampm}`;
+}
