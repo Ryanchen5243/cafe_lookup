@@ -32,13 +32,32 @@ function showMainPage(toShow) {
 
 function displayCafeData() {
   if (!api_data) return;
-  // ['place_id', 'display_name', 'p_type', 'rating',
-  //   'rating_count', 'location', 'price_level',
-  //   ((((((->>>>>>'price_range', 'r_hours', 'study_confidence', 'p_address']
   //
+  // result panel
   // Starbucks
   // **** 4.1 (312 reviews)  ->>>>> Score
   // ! East Village $$ Open until...
+  //
+  // ----------------------------------------------------
+  // display_name,location,next_open_close,
+  // p_address,p_type,phone_no,place_id,price_level,
+  // price_range,r_hours, rating, rating_count,
+  // review_summary,study_confidence
+
+  // -----------------------------------------------------
+  // |          Café Name                               |
+  // |       Tomorrow 12:00 PM                          |
+  // -----------------------------------------------------
+  // | Left Column:                                  | Right Column:
+  // -----------------------------------------------------|--------------------------------------------------
+  // | Address: 123 Coffee St, City                   | Rating: 4.5 ⭐
+  // | Phone: (123) 456-7890                          | (150 Reviews)
+  // | Price Level: $$                                | "Great coffee, friendly staff!"
+  // | Price Range: $10 - $30                         | Confidence: [ O O O O O ] 85%
+  // | Opening Hours:                                 |
+  // |   Mon-Fri: 7:00 AM - 8:00 PM                   |
+  // |   Sat-Sun: 8:00 AM - 6:00 PM                   |
+  // -----------------------------------------------------|--------------------------------------------------
 
   let bounds = L.latLngBounds([]);
   const curr_time = new Date();
@@ -142,11 +161,100 @@ function isOpenNow(now, r_hours) {
 function showModal(cafe) {
   const modal = document.getElementById("detail-modal");
   const body = document.getElementById("modal-body");
-  body.innerHTML = "";
+  // ,next_open_close,
+  const place_name = document.createElement("h1");
+  place_name.textContent = `${cafe["display_name"]}`;
+  place_name.id = "modal-item-display-name";
+  const modal_body_container = document.createElement("div");
+  modal_body_container.classList.add("modal-body-bottom-container");
+  const modal_body_container_el_1 = document.createElement("div");
+  const modal_body_container_el_2 = document.createElement("div");
+  const addr_el = document.createElement("div");
+  addr_el.id = "modal-item-addr-line";
+  const addr_el_1 = document.createElement("i");
+  addr_el_1.classList.add("fa-solid", "fa-location-dot");
+  const addr_el_2 = document.createElement("p");
+  addr_el_2.textContent = `${cafe?.p_address?.addressLines || ""}, ${
+    cafe?.p_address?.administrativeArea || ""
+  }`;
+  addr_el.append(addr_el_1, addr_el_2);
+  modal_body_container_el_1.append(addr_el);
+  const phone_no_el = document.createElement("div");
+  phone_no_el.id = "modal-item-phone-line";
+  const phone_no_el_1 = document.createElement("i");
+  phone_no_el_1.classList.add("fa-solid", "fa-phone");
+  const phone_no_el_2 = document.createElement("p");
+  phone_no_el_2.textContent = `${cafe?.phone_no || ""}`;
+  phone_no_el.append(phone_no_el_1, phone_no_el_2);
+  modal_body_container_el_1.append(phone_no_el);
+  // const price_level_el = document.createElement("p");
+  // price_level_el.textContent = ""; // `${cafe?.price_level || ""}`;
+  const price_range_el = document.createElement("div");
+  price_range_el.id = "modal-item-price-line";
+  const price_range_el_1 = document.createElement("i");
+  price_range_el_1.classList.add("fa-solid", "fa-dollar-sign");
+  const price_range_el_2 = document.createElement("p");
+  if (Array.isArray(cafe?.price_range) && cafe.price_range.length == 2) {
+    price_range_el_2.textContent = `${cafe.price_range[0]} - ${cafe.price_range[1]}`;
+    price_range_el.append(price_range_el_1, price_range_el_2);
+    modal_body_container_el_1.append(price_range_el);
+  }
+  const daysMap = {
+    Monday: "Mon",
+    Tuesday: "Tue",
+    Wednesday: "Wed",
+    Thursday: "Thu",
+    Friday: "Fri",
+    Saturday: "Sat",
+    Sunday: "Sun",
+  };
+  if (cafe?.r_hours != null) {
+    const hours_dropdown = document.createElement("div");
+    hours_dropdown.classList.add("modal-item-hours-dropdown");
+    const hours_button = document.createElement("button");
+    hours_button.classList.add("modal-item-hours-toggle");
+    hours_button.textContent = "Opening Hours ▾";
+    const hours_list = document.createElement("div");
+    hours_list.classList.add("modal-item-hours-list");
+    hours_dropdown.append(hours_button, hours_list);
+    cafe.r_hours.forEach((e) => {
+      const e_i = document.createElement("p");
+      e_i.textContent = `${daysMap[e[0]]}: ${e[1][0]} - ${e[1][1]}`;
+      hours_list.appendChild(e_i);
+    });
+    hours_dropdown.addEventListener("click", () => {
+      if (hours_list.style.maxHeight && hours_list.style.maxHeight !== "0px") {
+        hours_list.style.maxHeight = "0";
+        hours_button.textContent = "Opening Hours ▾";
+      } else {
+        hours_list.style.maxHeight = hours_list.scrollHeight + "px";
+        hours_button.textContent = "Opening Hours ▴";
+      }
+    })
+    modal_body_container_el_1.append(hours_dropdown);
+  }
+  // ------------------------------------------------------------------------
+  const rating_el = document.createElement("p");
+  if (cafe?.rating == null || cafe?.rating_count == null) {
+    rating_el.textContent = "";
+  } else {
+    rating_el.textContent = `${cafe.rating} (${cafe.rating_count} reviews)`;
+  }
+  const review_summary_el = document.createElement("p");
+  review_summary_el.textContent = `${cafe?.review_summary?.text?.text || ""}`;
+  const confidence_el = `Confidence -> ${cafe["study_confidence"]}`;
+  modal_body_container_el_2.append(rating_el, review_summary_el, confidence_el);
+  modal_body_container_el_1.classList.add("modal-body-con-left");
+  modal_body_container_el_2.classList.add("modal-body-con-right");
+  modal_body_container.appendChild(modal_body_container_el_1);
+  modal_body_container.appendChild(modal_body_container_el_2);
+  body.appendChild(place_name);
+  body.appendChild(modal_body_container);
   modal.style.display = "block";
 }
 document.getElementById("modal-close").onclick = () => {
   document.getElementById("detail-modal").style.display = "none";
+  document.getElementById("modal-body").innerHTML = "";
 };
 
 async function init_script() {
