@@ -281,12 +281,14 @@ function showModal(cafe) {
   // start progress bar
   const progress_circle = document.createElement("div");
   progress_circle.classList.add("progress-circle");
-  progress_circle.style = `--value: ${Number(cafe["study_confidence"]*100)}`;
-  progress_circle.setAttribute('role', 'progressbar');
-  progress_circle.ariaValueNow = `${Number(cafe["study_confidence"]*100)}`;
-  progress_circle.ariaValueMin = '0';
-  progress_circle.ariaValueMax = '100';
-  progress_circle.textContent = `${(cafe["study_confidence"] * 100).toFixed(2)}%`;
+  progress_circle.style = `--value: ${Number(cafe["study_confidence"] * 100)}`;
+  progress_circle.setAttribute("role", "progressbar");
+  progress_circle.ariaValueNow = `${Number(cafe["study_confidence"] * 100)}`;
+  progress_circle.ariaValueMin = "0";
+  progress_circle.ariaValueMax = "100";
+  progress_circle.textContent = `${(cafe["study_confidence"] * 100).toFixed(
+    2
+  )}%`;
   modal_body_container_el_2.appendChild(progress_circle);
   // end progress bar
 
@@ -301,7 +303,48 @@ function showModal(cafe) {
 
 function showInsightsModal() {
   const modal = document.getElementById("analysis-modal");
+  const body = document.getElementById("analysis-modal-body");
+  const dropdown_select_wrapper = document.createElement("div");
+  const analysis_modal_title = document.createElement("div");
+  analysis_modal_title.textContent = "Analysis";
+  analysis_modal_title.classList.add("analysis-modal-title");
+  dropdown_select_wrapper.classList.add("dropdown-select-wrapper");
+  const analysis_dropdown_label = document.createElement("label");
+  analysis_dropdown_label.setAttribute("for", "analysis-modal-select-type");
+  analysis_dropdown_label.classList.add("dropdown-label");
+  const analysis_dropdown_select = document.createElement("select");
+  analysis_dropdown_select.id = "analysis-modal-select-type";
+  analysis_dropdown_select.name = "analysis-modal-select-type";
+  analysis_dropdown_select.classList.add("dropdown-select");
+  const op1 = document.createElement("option");
+  op1.value = "";
+  op1.textContent = "-- Select --";
+  op1.disabled = true;
+  op1.selected = true;
+  const op2 = document.createElement("option");
+  op2.value = "trend";
+  op2.textContent = "Trend Analysis";
+  const op3 = document.createElement("option");
+  op3.value = "confidence";
+  op3.textContent = "Confidence Analysis";
+  const op4 = document.createElement("option");
+  op4.value = "performance";
+  op4.textContent = "Performance Breakdown";
+  analysis_dropdown_select.append(op1, op2, op3, op4);
+  analysis_dropdown_select.addEventListener("change", (e) => {
+    displayInsights(e.target.value);
+  });
+  dropdown_select_wrapper.append(analysis_modal_title,analysis_dropdown_label, analysis_dropdown_select);
+  const body_content = document.createElement("div");
+  body_content.classList.add("insights-modal-body-content");
+  body.append(dropdown_select_wrapper,body_content);
   modal.style.display = "block";
+}
+
+function displayInsights(insight_type){
+  const content = document.getElementsByClassName("insights-modal-body-content")[0];
+  content.textContent = insight_type;
+  // pass -> to implement feature later
 }
 
 document.getElementById("modal-close").onclick = () => {
@@ -312,7 +355,7 @@ document.getElementById("modal-close").onclick = () => {
 document.getElementById("analysis-modal-close").onclick = () => {
   document.getElementById("analysis-modal").style.display = "none";
   document.getElementById("analysis-modal-body").innerHTML = "";
-}
+};
 
 async function init_script() {
   await google.maps.importLibrary("places");
