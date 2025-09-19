@@ -276,8 +276,20 @@ function showModal(cafe) {
   }
   const review_summary_el = document.createElement("p");
   review_summary_el.textContent = `${cafe?.review_summary?.text?.text || ""}`;
-  const confidence_el = `Confidence -> ${cafe["study_confidence"]}`;
-  modal_body_container_el_2.append(rating_el, review_summary_el, confidence_el);
+  // const confidence_el = `Confidence -> ${cafe["study_confidence"]}`;
+  modal_body_container_el_2.append(rating_el, review_summary_el);
+  // start progress bar
+  const progress_circle = document.createElement("div");
+  progress_circle.classList.add("progress-circle");
+  progress_circle.style = `--value: ${Number(cafe["study_confidence"]*100)}`;
+  progress_circle.setAttribute('role', 'progressbar');
+  progress_circle.ariaValueNow = `${Number(cafe["study_confidence"]*100)}`;
+  progress_circle.ariaValueMin = '0';
+  progress_circle.ariaValueMax = '100';
+  progress_circle.textContent = `${(cafe["study_confidence"] * 100).toFixed(2)}%`;
+  modal_body_container_el_2.appendChild(progress_circle);
+  // end progress bar
+
   modal_body_container_el_1.classList.add("modal-body-con-left");
   modal_body_container_el_2.classList.add("modal-body-con-right");
   modal_body_container.appendChild(modal_body_container_el_1);
