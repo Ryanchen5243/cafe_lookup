@@ -32,32 +32,11 @@ function showMainPage(toShow) {
 
 function displayCafeData() {
   if (!api_data) return;
-  //
-  // result panel
-  // Starbucks
-  // **** 4.1 (312 reviews)  ->>>>> Score
-  // ! East Village $$ Open until...
-  //
   // ----------------------------------------------------
   // display_name,location,next_open_close,
   // p_address,p_type,phone_no,place_id,price_level,
   // price_range,r_hours, rating, rating_count,
   // review_summary,study_confidence
-
-  // -----------------------------------------------------
-  // |          Café Name                               |
-  // |       Tomorrow 12:00 PM                          |
-  // -----------------------------------------------------
-  // | Left Column:                                  | Right Column:
-  // -----------------------------------------------------|--------------------------------------------------
-  // | Address: 123 Coffee St, City                   | Rating: 4.5 ⭐
-  // | Phone: (123) 456-7890                          | (150 Reviews)
-  // | Price Level: $$                                | "Great coffee, friendly staff!"
-  // | Price Range: $10 - $30                         | Confidence: [ O O O O O ] 85%
-  // | Opening Hours:                                 |
-  // |   Mon-Fri: 7:00 AM - 8:00 PM                   |
-  // |   Sat-Sun: 8:00 AM - 6:00 PM                   |
-  // -----------------------------------------------------|--------------------------------------------------
 
   let bounds = L.latLngBounds([]);
   const curr_time = new Date();
@@ -110,8 +89,7 @@ function displayCafeData() {
     }
     const child_2_2 = document.createElement("div");
     child_2_2.textContent = `${element["rating"]} (${element["rating_count"]} reviews)`;
-    child_2.appendChild(child_2_1);
-    child_2.appendChild(child_2_2);
+    child_2.append(child_2_1, child_2_2);
     const child_3 = document.createElement("div");
     child_3.classList.add("cafe_result_location_price_detail");
     const icon_container = document.createElement("div");
@@ -125,15 +103,51 @@ function displayCafeData() {
         ? ""
         : price_level_mapping[element["price_level"]]
     } ${isOpenNow(curr_time, Object.fromEntries(element["r_hours"]))}`;
-    child_3.appendChild(icon_container);
-    child_3.appendChild(price_level_el);
-    cafe_el.appendChild(child_1);
-    cafe_el.appendChild(child_2);
-    cafe_el.appendChild(child_3);
-    document.getElementById("info-panel").appendChild(cafe_el);
+    child_3.append(icon_container, price_level_el);
+    cafe_el.append(child_1, child_2, child_3);
+    document.getElementById("cafe-results-panel").appendChild(cafe_el);
     // `Study Confidence: ${(element["study_confidence"] * 100).toFixed(0)}%`;
     bounds.extend([location.lat, location.long]);
   });
+  // fill the top right panel
+  const summary_overview_el = document.createElement("div");
+  const summary_overview_el_1 = document.createElement("h2");
+  summary_overview_el_1.textContent = "Summary";
+  const summary_overview_el_2 = document.createElement("p");
+  const topCafeName = api_data?.results?.[0]?.display_name ?? "N/A";
+  summary_overview_el_2.textContent = `Top Rated Café: ${topCafeName}`;
+  const summary_overview_el_3 = document.createElement("p");
+  summary_overview_el_3.textContent = `Total ${
+    api_data?.results.length || "0"
+  } Cafes`;
+  const summary_overview_el_4 = document.createElement("p");
+  const ratings = api_data?.results ?? [];
+  const avg_rating =
+    ratings.length > 0
+      ? (
+          ratings.reduce((acc, e) => {
+            return acc + (Number(e?.rating) || 0);
+          }, 0) / ratings.length
+        ).toFixed(2)
+      : "N/A";
+  summary_overview_el_4.textContent = `Avg Rating: ${avg_rating}⭐`;
+  summary_overview_el.append(
+    summary_overview_el_1,
+    summary_overview_el_2,
+    summary_overview_el_3,
+    summary_overview_el_4
+  );
+  const open_analysis_modal_btn = document.createElement("button");
+  open_analysis_modal_btn.textContent = "hi button";
+  summary_overview_el.classList.add("summary-overview-el");
+  open_analysis_modal_btn.classList.add("open-analysis-modal-btn");
+  open_analysis_modal_btn.textContent = "View Insights";
+  open_analysis_modal_btn.addEventListener("click", () => {
+    showInsightsModal();
+  });
+  document
+    .getElementById("results-page-top-right")
+    .append(summary_overview_el, open_analysis_modal_btn);
   map.fitBounds(bounds);
   api_data = null;
 }
@@ -161,7 +175,6 @@ function isOpenNow(now, r_hours) {
 function showModal(cafe) {
   const modal = document.getElementById("detail-modal");
   const body = document.getElementById("modal-body");
-  // ,,
   const place_name = document.createElement("h1");
   place_name.textContent = `${cafe["display_name"]}`;
   place_name.id = "modal-item-display-name";
@@ -209,11 +222,20 @@ function showModal(cafe) {
     Sunday: "Sun",
   };
   const next_open_close_str = `${
-      (cafe?.next_open_close?.open_now
-        ? `<span class="status-open">Open.</span> Closes ${(new Date(cafe?.next_open_close?.next_close)).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) || ""}`
-        : `<span class="status-closed">Closed.</span> Opens ${(new Date(cafe.next_open_close.next_open)).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) || ""}`) ||
-      "Opening Hours ▾"
-    }`;
+    (cafe?.next_open_close?.open_now
+      ? `<span class="status-open">Open.</span> Closes ${
+          new Date(cafe?.next_open_close?.next_close).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          }) || ""
+        }`
+      : `<span class="status-closed">Closed.</span> Opens ${
+          new Date(cafe.next_open_close.next_open).toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+          }) || ""
+        }`) || "Opening Hours ▾"
+  }`;
   if (cafe?.r_hours != null) {
     const hours_dropdown = document.createElement("div");
     hours_dropdown.classList.add("modal-item-hours-dropdown");
@@ -264,10 +286,21 @@ function showModal(cafe) {
   body.appendChild(modal_body_container);
   modal.style.display = "block";
 }
+
+function showInsightsModal() {
+  const modal = document.getElementById("analysis-modal");
+  modal.style.display = "block";
+}
+
 document.getElementById("modal-close").onclick = () => {
   document.getElementById("detail-modal").style.display = "none";
   document.getElementById("modal-body").innerHTML = "";
 };
+
+document.getElementById("analysis-modal-close").onclick = () => {
+  document.getElementById("analysis-modal").style.display = "none";
+  document.getElementById("analysis-modal-body").innerHTML = "";
+}
 
 async function init_script() {
   await google.maps.importLibrary("places");
@@ -315,10 +348,11 @@ document.getElementById("fetchBtn").addEventListener("click", async () => {
   }
 });
 
-function formatTimeString(timeStr) { // "hh:mm" 24 hr
+function formatTimeString(timeStr) {
+  // "hh:mm" 24 hr
   if (!timeStr) return "";
   let [hours, minutes] = timeStr.split(":").map(Number);
   const ampm = hours < 12 ? "AM" : "PM";
   hours = hours % 12 === 0 ? 12 : hours % 12;
-  return `${hours}:${String(minutes).padStart(2,"0")} ${ampm}`;
+  return `${hours}:${String(minutes).padStart(2, "0")} ${ampm}`;
 }
