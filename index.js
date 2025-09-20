@@ -1,5 +1,6 @@
 let map = null;
 let api_data = null;
+const markers = [];
 function showMainPage(toShow) {
   const main_page = document.getElementById("main-page");
   const res_page = document.getElementById("res-page");
@@ -30,6 +31,31 @@ function showMainPage(toShow) {
   }
 }
 
+// function generateMapColorFeature() {
+//   if (!map) return;
+//   markers.forEach(m => {
+//     const color = getMarkerColor(m.study_confidence);
+//     m.setStyle({ color: color, fillColor: color });
+//   });
+// }
+
+// function getMarkerColor(s){
+//   const score = parseFloat(s);
+//   if (isNaN(score)) return "#999999";
+//   if (score >= 90) return "#1a9850";
+//   if (score >= 80) return "#66bd63";
+//   if (score >= 70) return "#a6d96a";
+//   if (score >= 60) return "#d9ef8b";
+//   if (score >= 50) return "#ffffbf";
+//   if (score >= 40) return "#fee08b";
+//   if (score >= 30) return "#fdae61";
+//   if (score >= 20) return "#f46d43";
+//   if (score >= 10) return "#d73027";
+//   return "#a50026"; // 0-9
+// }
+
+
+
 function displayCafeData() {
   if (!api_data) return;
   // ----------------------------------------------------
@@ -44,7 +70,17 @@ function displayCafeData() {
     const cafe_el = document.createElement("div");
     cafe_el.classList.add("cafe_result");
     const location = Object.fromEntries(element["location"]);
-    const marker = L.marker([location.lat, location.long]).addTo(map);
+    const marker = L.marker([location.lat, location.long]);
+    // const marker = L.circleMarker([location.lat, location.long],{
+    //   radius: 8,
+    //   fillOpacity: 0.7,
+    //   color: getMarkerColor(element.study_confidence),
+    //   fillColor: getMarkerColor(element.study_confidence),
+    //   weight: 2,
+    // });
+
+
+
 
     const popup_el = document.createElement("div");
     popup_el.classList.add("popup-content");
@@ -106,7 +142,9 @@ function displayCafeData() {
     child_3.append(icon_container, price_level_el);
     cafe_el.append(child_1, child_2, child_3);
     document.getElementById("cafe-results-panel").appendChild(cafe_el);
-    // `Study Confidence: ${(element["study_confidence"] * 100).toFixed(0)}%`;
+    marker.study_confidence = ((element?.study_confidence * 100).toFixed(2)) || 0;
+    markers.push(marker);
+    marker.addTo(map);
     bounds.extend([location.lat, location.long]);
   });
   // fill the top right panel
@@ -398,6 +436,7 @@ document.getElementById("fetchBtn").addEventListener("click", async () => {
     );
     api_data = data;
     displayCafeData();
+    // generateMapColorFeature();
   } catch (err) {
     console.error(err);
   }
